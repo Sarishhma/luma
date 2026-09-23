@@ -19,16 +19,16 @@ export const tenantRoutes: FastifyPluginAsync = async (fastify) => {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
   const tenantController = new TenantController(fastify.prisma);
 
-  app.post("/tenants", {
-    schema: {
-      tags: ["Tenants"],
-      summary: "Provision a new workspace",
-      security: [{ bearerAuth: [] }, { cookieAuth: [] }],
-      body: createTenantSchema,
-      response: { 201: tenantResponseSchema, 401: errorResponseSchema },
-    },
-    preHandler: authGuard,
-  }, tenantController.createTenant);
+  // app.post("/tenants", {
+  //   schema: {
+  //     tags: ["Tenants"],
+  //     summary: "Provision a new workspace",
+  //     security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+  //     body: createTenantSchema,
+  //     response: { 201: tenantResponseSchema, 401: errorResponseSchema },
+  //   },
+  //   preHandler: authGuard,
+  // }, tenantController.createTenant);
 
   app.post("/tenants/switch", {
     schema: {
