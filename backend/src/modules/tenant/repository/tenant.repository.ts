@@ -113,4 +113,54 @@ export class TenantRepository {
       return member;
     });
   }
+
+  async findMembersByTenantId( tenantId :string){
+    return this.prisma.tenantMember.findMany({
+      where:{tenantId},
+      include:{
+        user:{
+          select:{
+            id:true,
+            name:true,
+            email:true,
+            image:true
+          }
+        }
+      },
+      orderBy:{createdAt:'asc'}
+
+    })
+  }
+
+async updateMemberRole(tenantId: string, targetUserId: string, role: TenantRole) {
+    return this.prisma.tenantMember.update({
+      where: {
+        userId_tenantId: {
+          tenantId,
+          userId: targetUserId,
+        },
+      },
+      data: { role },
+    });
+  }
+
+  async  removeMember(tenantId:string,targetUserId:string){
+    return this.prisma.tenantMember.delete({
+      where:{
+        userId_tenantId:{
+          tenantId,
+          userId:targetUserId
+        }
+      }
+    })
+  }
+
+  async countOwners(tenantId:string){
+      return this.prisma.tenantMember.count({
+where:{
+  tenantId,
+  role:"OWNER"
+}
+      })
+  }
 }

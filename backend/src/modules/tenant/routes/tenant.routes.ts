@@ -12,6 +12,10 @@ import {
   inviteTenantResponseSchema,
   acceptTenantInvitationSchema,
   acceptTenantInvitationResponseSchema,
+  updateMemberRoleSchema,
+  memberResponseSchema,
+  updateMemberRoleResponseSchema,
+  removeMemberResponseSchema,
 } from "../schema/tenant.schema.js";
 import { errorResponseSchema } from "../../../common/common.schema.js";
 
@@ -63,4 +67,57 @@ export const tenantRoutes: FastifyPluginAsync = async (fastify) => {
     },
     preHandler: authGuard,
   }, tenantController.acceptInvitation);
+
+  // --- Member Management Routes ---
+
+  app.get("/tenants/:tenantId/members", {
+    schema: {
+      tags: ["Tenants"],
+      summary: "List workspace members",
+      security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+      params: z.object({ tenantId: z.string().uuid() }),
+      response: { 200: memberResponseSchema, 403: errorResponseSchema, 400: errorResponseSchema },
+    },
+    preHandler: authGuard,
+  }, tenantController.listMember);
+
+  app.patch("/tenants/:tenantId/members/:targetUserId", {
+    schema: {
+      tags: ["Tenants"],
+      summary: "Update member role",
+      security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+      params: z.object({
+        tenantId: z.string().uuid(),
+        targetUserId: z.string().uuid(),
+      }),
+      body: updateMemberRoleSchema,
+      response: {
+        200: updateMemberRoleResponseSchema,
+        403: errorResponseSchema,
+        404: errorResponseSchema,
+        400: errorResponseSchema,
+      },
+    },
+    preHandler: authGuard,
+  }, tenantController.updateMemberRole);
+
+  app.delete("/tenants/:tenantId/members/:targetUserId", {
+    schema: {
+      tags: ["Tenants"],
+      summary: "Remove member or leave workspace",
+      security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+      params: z.object({
+        tenantId: z.string().uuid(),
+        targetUserId: z.string().uuid(),
+      }),
+      response: {
+        200: removeMemberResponseSchema,
+        403: errorResponseSchema,
+        404: errorResponseSchema,
+        409: errorResponseSchema,
+        400: errorResponseSchema,
+      },
+    },
+    preHandler: authGuard,
+  }, tenantController.removeMember);
 };
