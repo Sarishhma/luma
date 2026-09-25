@@ -2,6 +2,7 @@ import { TenantRepository } from "../repository/tenant.repository.js";
 import type { PrismaClient, TenantRole } from "../../../generated/prisma/client.js";
 import slugify from "slugify";
 import crypto from "crypto";
+import { error } from "console";
 
 export class TenantService {
   private repository: TenantRepository;
@@ -121,4 +122,90 @@ export class TenantService {
       },
     };
   }
+ async listMembers(userId: string, tenantId: string) {
+    const membership = await this.repository.findMembership(userId, tenantId);
+    if (!membership) {
+      throw new Error("ACCESS_DENIED: You are not a member of this workspace.");
+    }
+
+    const members = await this.repository.findMembersByTenantId(tenantId);
+
+    return members.map((member) => ({
+      id: member.id,
+      userId: member.userId,
+      role: member.role,
+      joinedAt: member.createdAt,
+      user: {
+        id: member.user.id,
+        name: member.user.name,
+        email: member.user.email,
+        image: member.user.image,
+      },
+    }));
+  }
+
+  async updateMemberRole(userId: string, tenantId: string, targetUserId: string, newRole: TenantRole) {
+    const requesterMembership = await this.repository.findMembership(userId, tenantId);
+    if (!requesterMembership || !['OWNER', 'ADMIN'].includes(requesterMembership.role)) {
+      throw new Error("ACCESS_DENIED: You do not have permission to update member roles.");
+    }
+
+    // Optional safety check: Prevent an admin from modifying an owner if needed
+    const targetMembership = await this.repository.findMembership(targetUserId, tenantId);
+    if (!targetMembership) {
+      throw new Error("NOT_FOUND: Target user is not a member of this workspace.");
+    }
+
+    if (targetMembership.role === 'OWNER' && requesterMembership.role !== 'OWNER') {
+      throw new Error("ACCESS_DENIED: Only an owner can modify another owner's role.");
+    }
+
+    const updatedMember = await this.repository.updateMemberRole(tenantId, targetUserId, newRole);
+
+    return {
+      success: true,
+      member: {
+        id: updatedMember.id,
+        userId: updatedMember.userId,
+        role: updatedMember.role,
+      },
+    };
+  }
+
+  async removeMember(userId: string, tenantId: string, targetUserId: string) {
+    const requesterMembership = await this.repository.findMembership(userId, tenantId);
+    if (!requesterMembership) {
+      throw new Error("ACCESS_DENIED: You are not a member of this workspace.");
+    }
+
+    const isSelf = userId === targetUserId;
+    const isAdminOrOwner = ['OWNER', 'ADMIN'].includes(requesterMembership.role);
+
+    // Users can leave themselves, or admins/owners can remove others
+    if (!isSelf && !isAdminOrOwner) {
+      throw new Error("ACCESS_DENIED: You do not have permission to remove members from this workspace.");
+    }
+
+    const targetMembership = await this.repository.findMembership(targetUserId, tenantId);
+    if (!targetMembership) {
+      throw new Error("NOT_FOUND: Target user is not a member of this workspace.");
+    }
+
+    // Prevent removing the last owner
+    if (targetMembership.role === 'OWNER') {
+      const ownerCount = await this.repository.countOwners(tenantId);
+      if (ownerCount <= 1) {
+        throw new Error("CONFLICT: Cannot remove the last remaining owner of the workspace.");
+      }
+    }
+
+    await this.repository.removeMember(tenantId, targetUserId);
+
+    return {
+      success: true,
+      message: isSelf ? "Successfully left the workspace." : "Successfully removed member from workspace.",
+    };
+  }
+
 }
+

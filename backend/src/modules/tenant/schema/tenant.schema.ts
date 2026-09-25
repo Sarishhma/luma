@@ -71,3 +71,43 @@ export const acceptTenantInvitationResponseSchema = z.object({
   success: z.boolean(),
   tenant: activeTenantContextSchema,
 });
+
+
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
+});
+
+export const memberResponseSchema = z.object({
+  success: z.boolean(),
+  members: z.array(
+    z.object({
+      id: z.string(),
+      userId: z.string(),
+      role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
+      joinedAt: z.coerce.date(),
+      user: z.object({
+        id: z.string(),
+        name: z.string().nullable(),
+        email: z.string(),
+        image: z.string().nullable(),
+      }),
+    })
+  ),
+});
+
+export const updateMemberRoleResponseSchema = z.object({
+  success: z.boolean(),
+  member: z.object({
+    id: z.string(),
+    userId: z.string(),
+    role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
+  }),
+});
+
+export const removeMemberResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+});
+
+export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>;
