@@ -211,3 +211,11 @@ enum SubscriptionStatus {
   CANCLED
   UNPAID
 }
+
+model Post {
+  id       String @id @default(uuid())
+  title    String
+  tenantId String
+
+  @@unique([id, tenantId]) // Required for findUnique/update injections
+}
