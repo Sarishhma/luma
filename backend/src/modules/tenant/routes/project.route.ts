@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { ProjectController } from "../controller/project.controller.js";
-import { createTenantContextHook } from "../../../middleware/tenant-context.js";
+import { createTenantContextHook } from "../../../lib/tenant-context.js";
 import { db } from "../../../lib/db.js";
 
 

@@ -27,6 +27,7 @@ model User {
 
   memberships    TenantMember[]
   createdTenants Tenant[]       @relation("TenantCreator")
+    sentInvitations TenantInvitation[] @relation("InvitationSender")
 
   @@unique([authProvider, providerAccountId])
 }
@@ -97,6 +98,7 @@ model AuditLog {
   @@index([userId])
   @@index([eventType])
   @@index([createdAt])
+  @@index([tenantId, createdAt])
 }
 
 model Tenant {

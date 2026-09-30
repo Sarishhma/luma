@@ -1,15 +1,26 @@
+
+
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { forbidden } from "../utils/app-error.js";
+import { forbidden } from "../common/error.js";
+import { hasAtLeast } from "../common/permission.js";
+import type { TenantRole } from "../generated/prisma/enums.js";
+import { tenantContext } from "../lib/tenant-context.js";
 
- export function requireRole(...allowedRoles: Array<"USER" | "ADMIN">){
-
-    return async function (request: FastifyRequest,reply: FastifyReply){
-        if(!request.user){
-            throw forbidden("You do not have permission to access this resource");
-        }
-        if(!allowedRoles.includes(request.user.role)){
-            throw forbidden("You donot have the permission to access this resource")
-        }
+/**
+ * Guard a route by workspace role using async/await. 
+ * Must come AFTER tenantScope:
+ *   preHandler: [authGuard, tenantScope, requireRole("ADMIN")]
+ */
+export function requireRole(minRole: TenantRole) {
+  return async function (request: FastifyRequest, reply: FastifyReply) {
+    const ctx = tenantContext.getStore();
+    
+    if (!ctx) {
+      throw new Error("requireRole used without tenantScope before it");
     }
 
- }
+    if (!hasAtLeast(ctx.role, minRole)) {
+      throw forbidden(`This action requires the ${minRole} role or higher.`);
+    }
+  };
+}
