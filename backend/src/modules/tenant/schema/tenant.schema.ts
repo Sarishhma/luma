@@ -1,113 +1,98 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-// --- Unified Tenant Role Enum (Includes VIEWER) ---
-export const tenantRoleEnum = z.enum(['OWNER', 'ADMIN', 'MEMBER', 'VIEWER']);
-export type TenantRole = z.infer<typeof tenantRoleEnum>;
+export const tenantRoleSchema = z.enum(["OWNER", "ADMIN", "MEMBER", "VIEWER"]);
 
-// --- 1. Tenant Creation Schemas ---
+// ───────── Requests ─────────
 export const createTenantSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Workspace name must be at least 2 characters')
-    .max(50, 'Workspace name cannot exceed 50 characters')
-    .trim(),
+  name: z.string().trim().min(2).max(60),
 });
 
-export type CreateTenantInput = z.infer<typeof createTenantSchema>;
-
-export const tenantResponseSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string(),
-  slug: z.string(),
-  role: tenantRoleEnum,
-  createdAt: z.union([z.string(), z.date()]),
-});
-
-// --- 2. Tenant Switching Schemas ---
 export const switchTenantSchema = z.object({
-  tenantId: z.string().uuid('Invalid tenant ID format'),
+  tenantId: z.string().uuid(),
 });
 
-export type SwitchTenantInput = z.infer<typeof switchTenantSchema>;
+export const tenantParamsSchema = z.object({
+  tenantId: z.string().uuid(),
+});
 
-export const activeTenantContextSchema = z.object({
-  id: z.string().uuid(),
+export const memberParamsSchema = z.object({
+  tenantId: z.string().uuid(),
+  targetUserId: z.string().uuid(),
+});
+
+export const inviteTenantSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  role: tenantRoleSchema.default("MEMBER"),
+});
+
+export const acceptTenantInvitationSchema = z.object({
+  token: z.string().min(32).max(128),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: tenantRoleSchema,
+});
+
+// ───────── Responses ─────────
+export const tenantSummarySchema = z.object({
+  id: z.string(),
   name: z.string(),
   slug: z.string(),
-  role: tenantRoleEnum,
+  role: tenantRoleSchema,
+});
+
+export const createTenantResponseSchema = z.object({
+  tenant: tenantSummarySchema,
+  accessToken: z.string(),
+});
+
+export const listTenantsResponseSchema = z.object({
+  tenants: z.array(tenantSummarySchema),
 });
 
 export const switchTenantResponseSchema = z.object({
   message: z.string(),
   accessToken: z.string(),
-  activeTenant: activeTenantContextSchema,
+  activeTenant: tenantSummarySchema,
 });
-
-// --- 3. Tenant Invitation Schemas ---
-export const inviteTenantSchema = z.object({
-  email: z.string().email({ message: 'Please provide a valid email address.' }),
-  role: tenantRoleEnum.optional().default('MEMBER'),
-});
-
-export type InviteTenantInput = z.infer<typeof inviteTenantSchema>;
 
 export const inviteTenantResponseSchema = z.object({
-  message: z.string(),
-  invitationId: z.string(),
-  email: z.string(),
-  role: tenantRoleEnum,
-  expiresAt: z.union([z.string(), z.date()]),
-  rawToken: z.string().optional(), // Included for development/testing convenience
+  invitation: z.object({
+    id: z.string(),
+    email: z.string(),
+    role: tenantRoleSchema,
+    expiresAt: z.date(),
+  }),
+  // Only present outside production. In production the token is EMAILED, never returned.
+  devInviteToken: z.string().optional(),
 });
-
-// --- 4. Accept Invitation Schemas ---
-export const acceptTenantInvitationSchema = z.object({
-  token: z.string().min(1, { message: 'Invitation token is required.' }),
-});
-
-export type AcceptTenantInvitationInput = z.infer<typeof acceptTenantInvitationSchema>;
 
 export const acceptTenantInvitationResponseSchema = z.object({
-  success: z.boolean(),
-  tenant: activeTenantContextSchema,
+  tenant: tenantSummarySchema,
+  accessToken: z.string(),
 });
 
-
-
-export const updateMemberRoleSchema = z.object({
-  role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
-});
-
-export const memberResponseSchema = z.object({
-  success: z.boolean(),
+export const listMembersResponseSchema = z.object({
   members: z.array(
     z.object({
       id: z.string(),
       userId: z.string(),
-      role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
-      joinedAt: z.coerce.date(),
-      user: z.object({
-        id: z.string(),
-        name: z.string().nullable(),
-        email: z.string(),
-        image: z.string().nullable(),
-      }),
-    })
+      role: tenantRoleSchema,
+      joinedAt: z.date(),
+      user: z.object({ id: z.string(), email: z.string() }),
+    }),
   ),
 });
 
 export const updateMemberRoleResponseSchema = z.object({
-  success: z.boolean(),
-  member: z.object({
-    id: z.string(),
-    userId: z.string(),
-    role: z.enum(["OWNER", "ADMIN", "MEMBER"]),
-  }),
+  member: z.object({ id: z.string(), userId: z.string(), role: tenantRoleSchema }),
 });
 
-export const removeMemberResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-});
+export const messageResponseSchema = z.object({ message: z.string() });
 
+// ───────── Types ─────────
+export type CreateTenantInput = z.infer<typeof createTenantSchema>;
+export type SwitchTenantInput = z.infer<typeof switchTenantSchema>;
+export type InviteTenantInput = z.infer<typeof inviteTenantSchema>;
+export type AcceptTenantInvitationInput = z.infer<typeof acceptTenantInvitationSchema>;
 export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>;
