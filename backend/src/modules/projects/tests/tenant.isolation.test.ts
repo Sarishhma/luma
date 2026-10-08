@@ -10,7 +10,15 @@ import { db } from "../../../lib/db.js";
 import { tenantContext, type TenantContext } from "../../../lib/tenant-context.js";
 
 const suffix = crypto.randomUUID().slice(0, 8);
-const inTenant = <T>(ctx: TenantContext, fn: () => Promise<T>) => tenantContext.run(ctx, fn);
+const inTenant = async <T>(
+  ctx: TenantContext,
+  fn: () => Promise<T>
+) => {
+  return tenantContext.run(ctx, async () => {
+    console.log("TEST CONTEXT:", tenantContext.getStore());
+    return await fn();
+  });
+};
 
 let ctxA: TenantContext;
 let ctxB: TenantContext;

@@ -18,6 +18,7 @@ import { registerGoogleOAuth } from "./config/google-oauth.js";
 import { oauthRoutes } from "./modules/oauth/routes/oauth.routes.js";
 import { swaggerPlugin } from "./plugins/swagger.plugins.js";
 import { tenantRoutes } from "./modules/tenant/routes/tenant.routes.js";
+import { projectRoutes } from "./modules/projects/routes/project.routes.js";
 
 export async function buildApp() {
   //is a function that RETURNS the app, instead of just running it directly here — this is a testability pattern: later, if you write automated tests, you can call buildApp()
@@ -46,7 +47,8 @@ export async function buildApp() {
   await app.register(auditRoutes, { prefix: "/api/audit-logs" });
   await app.register(oauthRoutes, { prefix: "/api/auth" });
   await app.register(twoFactorRoutes, { prefix: "/api/two-factors" });
-  await app.register(tenantRoutes,{prefix:"/api"})
+  await app.register(tenantRoutes,{prefix:"/api/"})
+  await app.register(projectRoutes,{prefix:"/api/"})
   app.get(
     "/health",
     {
