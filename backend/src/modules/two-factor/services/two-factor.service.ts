@@ -9,11 +9,8 @@ import {
   verify,
 } from "otplib";
 import { twoFactorRepository } from "../repositories/two-factor.repository.js";
-import {
-  badRequest,
-  conflict,
-  notFound,
-} from "../../../utils/app-error.js";
+import { notFound ,  badRequest,
+  conflict} from "../../../common/error.js";
 
 export const twoFactorService={
 async generateSetup(userId:string,email:string){
@@ -83,4 +80,4 @@ return{
 
 }
 
-}
+}

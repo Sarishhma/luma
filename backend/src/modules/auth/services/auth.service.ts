@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 import { env } from "../../../config/env.js";
 import { sendOtpEmail } from "../../../lib/email.js";
 import { comparepassword, hashPassword } from "../../../lib/password.js";
-import { badRequest, conflict, forbidden, notFound, tooManyRequests, unauthorized } from "../../../utils/app-error.js";
 import { generateOtp, getOtpExpiry, hashOtp, isOtpExpired, verifyOtpHash } from "../../../utils/otp.js";
 import { signAccessToken, signRefreshToken, signTwoFactorChallenge, verifyRefreshToken, verifyTwoFactorChallenge } from "../../../utils/token.js";
 import { createPasswordResetOtp,  createUser, createVerificationOtp, deletePasswordResetOtpsForUser, deleteVerificationOtpsForUser,  findLatestPasswordResetOtp, findLatestVerificationOtp,  finduserByEmail, findUserById, incrementFailedLoginAttempts, incrementOtpAttempts, incrementPasswordResetAttempts, lockUserAccount, markEmailAsVerified, resetLoginAttempts,  updateUserPassword  } from "../repositories/auth.repository.js";
@@ -11,6 +10,7 @@ import { consumeRefreshToken, createRefreshToken, findRefreshTokenById, revokeAl
 import { logAuditEvent } from "../../audit/services/audit.service.js";
 import { verify } from "otplib";
 import { decrypt, encrypt } from "../../../lib/encryption.js";
+import { unauthorized,badRequest, conflict, forbidden, notFound, tooManyRequests } from "../../../common/error.js";
 
 
 

@@ -233,7 +233,7 @@ export class TenantRepository {
       where: {
         sessionId,
         userId,
-        revokeAt: null,
+        revokedAt: null,
       },
       data: {
         activeTenantId: tenantId,
