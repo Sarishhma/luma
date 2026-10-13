@@ -4,8 +4,8 @@ import {
     revokeSession as revokeSessionRepository,
 } from "../repositories/session.repository.js";
 
-import { notFound } from "../../../utils/app-error.js";
 import { prisma } from "../../../lib/prisma.js";
+import { notFound } from "../../../common/error.js";
 
 // Session ID identifies a particular login/device, while refresh tokens are the credentials that keep that session authenticated. This allows users to revoke one device without logging out their other devices.
 export async function getUserSessions(userId: string) {

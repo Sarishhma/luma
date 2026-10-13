@@ -1,7 +1,7 @@
 import fp from "fastify-plugin";
 import type { FastifyPluginAsync, FastifyError } from "fastify";
-import { AppError } from "../utils/app-error.js";
 import { hasZodFastifySchemaValidationErrors } from "fastify-type-provider-zod";
+import { AppError } from "../common/error.js";
 
 export const errorHandlerPlugin: FastifyPluginAsync = fp(async (fastify) => {
   fastify.setErrorHandler((error: FastifyError, request, reply) => {

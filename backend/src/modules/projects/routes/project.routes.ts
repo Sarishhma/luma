@@ -56,13 +56,13 @@ const security = [{ bearerAuth: [] }, { cookieAuth: [] }] as const;
     handler: controller.create,
   });
 
-  app.delete("/projects/:id", {
+  app.delete("/projects/", {
     schema: {
       tags: ["Projects"],
       summary: "Delete a project",
       security,
       params: projectParamsSchema,
-      response: { 204: { type: "null" }, ...standardErrors },
+      response: { ...standardErrors },
     },
     preHandler: [...scope, requireRole("ADMIN")],
     handler: controller.remove,

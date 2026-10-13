@@ -50,7 +50,9 @@ export const db = prisma.$extends({
       async $allOperations({ model, operation, args, query }) {
         if (!TENANT_SCOPED_MODELS.has(model)) return query(args);
 
-        const ctx = tenantContext.getStore();
+const ctx = tenantContext.getStore();
+
+console.log("PRISMA CONTEXT:", ctx);
         if (!ctx) {
           throw new Error(`Tenant context required for ${model}.${operation}`);
         }

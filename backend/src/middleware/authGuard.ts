@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { verifyAccessToken } from "../utils/token.js";
-import { unauthorized } from "../utils/app-error.js";
+import { unauthorized } from "../common/error.js";
 
 export async function authGuard(request: FastifyRequest, reply: FastifyReply) {
   const token =request.cookies.accessToken;

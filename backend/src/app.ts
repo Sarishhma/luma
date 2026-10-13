@@ -18,6 +18,9 @@ import { registerGoogleOAuth } from "./config/google-oauth.js";
 import { oauthRoutes } from "./modules/oauth/routes/oauth.routes.js";
 import { swaggerPlugin } from "./plugins/swagger.plugins.js";
 import { tenantRoutes } from "./modules/tenant/routes/tenant.routes.js";
+import { projectRoutes } from "./modules/projects/routes/project.routes.js";
+import rawBody from "fastify-raw-body"
+import { billingRoutes } from "./modules/billing/routes/Billing.routes.js";
 
 export async function buildApp() {
   //is a function that RETURNS the app, instead of just running it directly here — this is a testability pattern: later, if you write automated tests, you can call buildApp()
@@ -40,13 +43,21 @@ export async function buildApp() {
 
   await app.register(rateLimitPlugin);
   await app.register(swaggerPlugin)
+    await app.register(rawBody,{
+    field:"rawBody",
+    global:false,
+    encoding:"utf8",
+    runFirst:true
+  })
 
   await app.register(authRoutes, { prefix: "/api/auth" }); //That prefix option means /register inside auth.routes.ts actually becomes reachable at /api/auth/register — keeping your URL structure organized and namespaced
   await app.register(sessionRoutes, { prefix: "/api" });
   await app.register(auditRoutes, { prefix: "/api/audit-logs" });
   await app.register(oauthRoutes, { prefix: "/api/auth" });
   await app.register(twoFactorRoutes, { prefix: "/api/two-factors" });
-  await app.register(tenantRoutes,{prefix:"/api"})
+  await app.register(tenantRoutes,{prefix:"/api/"})
+  await app.register(projectRoutes,{prefix:"/api/"})
+  await app.register(billingRoutes,{prefix:"/api/billing"})
   app.get(
     "/health",
     {

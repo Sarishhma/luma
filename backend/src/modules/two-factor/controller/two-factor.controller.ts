@@ -1,9 +1,9 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import { unauthorized } from "../../../utils/app-error.js";
 import { twoFactorService } from "../services/two-factor.service.js";
 import { completeTwoFactorLogin } from "../../auth/services/auth.service.js";
 import type { CompleteTwoFactorLoginInput } from "../schemas/two-factor.schema.js";
+import { unauthorized } from "../../../common/error.js";
 
 export const twoFactorController = {
   async setup(request: FastifyRequest, reply: FastifyReply) {

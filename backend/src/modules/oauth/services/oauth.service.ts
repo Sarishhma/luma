@@ -12,7 +12,6 @@
 
 
 import { randomUUID } from "crypto";
-import { conflict } from "../../../utils/app-error.js";
 import { hashOtp } from "../../../utils/otp.js";
 import {
   signAccessToken,
@@ -34,6 +33,7 @@ import type {
   GoogleUserInfo,
 } from "../types/oauth.types.js";
 import { createOAuthUser, findUserByProvider } from "../repositories/OAuth.repository.js";
+import { conflict } from "../../../common/error.js";
 
 const REFRESH_TOKEN_MS = 7 * 24 * 60 * 60 * 1000;
 

@@ -212,13 +212,13 @@ enum TenantRole {
   VIEWER
 }
 
-enum SubscriptionStatus {
-  TRIALING
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  UNPAID
-}
+  enum SubscriptionStatus {
+    TRIALING
+    ACTIVE
+    PAST_DUE
+    CANCELED
+    UNPAID
+  }
 
 model Post {
   id       String @id @default(uuid())
