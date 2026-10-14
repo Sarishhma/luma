@@ -4,11 +4,12 @@ import type {
   PrismaClient,
   TenantRole,
 } from "../../../generated/prisma/client.js";
+import type { TenantDb } from "../../../lib/db.js";
 
 /**
  * Either the normal Prisma client or a transaction client.
  */
-export type DbClient = PrismaClient | Prisma.TransactionClient;
+export type DbClient = TenantDb | Prisma.TransactionClient;
 
 /**
  * Repository layer.
@@ -23,21 +24,24 @@ export type DbClient = PrismaClient | Prisma.TransactionClient;
  * The repository decides HOW to access the database.
  */
 export class TenantRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly db: TenantDb) {}
 
   // ─────────────────────────── transaction ───────────────────────────
 
-  transaction<T>(
-    fn: (tx: Prisma.TransactionClient) => Promise<T>,
-  ): Promise<T> {
-    return this.prisma.$transaction(fn);
-  }
+transaction<T>(
+  fn: (tx: any) => Promise<T>,
+): Promise<T> {
+  return this.db.$transaction(fn, {
+    maxWait: 10000,
+    timeout: 10000,
+  }) as Promise<T>;
+}
 
   // ───────────────────────────── users ──────────────────────────────
 
   findUserById(
     userId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.user.findUnique({
       where: {
@@ -59,7 +63,7 @@ export class TenantRepository {
       slug: string;
       createdById: string;
     },
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenant.create({
       data,
@@ -71,7 +75,7 @@ export class TenantRepository {
   findMembership(
     userId: string,
     tenantId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.findUnique({
       where: {
@@ -88,7 +92,7 @@ export class TenantRepository {
 
   findMembershipsByUser(
     userId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.findMany({
       where: {
@@ -106,7 +110,7 @@ export class TenantRepository {
   findMembershipByEmail(
     tenantId: string,
     email: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.findFirst({
       where: {
@@ -123,7 +127,7 @@ export class TenantRepository {
 
   findMembersByTenantId(
     tenantId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.findMany({
       where: {
@@ -149,7 +153,7 @@ export class TenantRepository {
       tenantId: string;
       role: TenantRole;
     },
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.create({
       data,
@@ -160,7 +164,7 @@ export class TenantRepository {
     tenantId: string,
     userId: string,
     role: TenantRole,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.update({
       where: {
@@ -178,7 +182,7 @@ export class TenantRepository {
   deleteMember(
     tenantId: string,
     userId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantMember.delete({
       where: {
@@ -227,7 +231,7 @@ export class TenantRepository {
     sessionId: string,
     userId: string,
     tenantId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.refreshToken.updateMany({
       where: {
@@ -248,7 +252,7 @@ export class TenantRepository {
   clearActiveTenantForUser(
     userId: string,
     tenantId: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.refreshToken.updateMany({
       where: {
@@ -280,7 +284,7 @@ export class TenantRepository {
       expiresAt: Date;
       invitedById: string;
     },
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     const {
       tenantId,
@@ -310,7 +314,7 @@ export class TenantRepository {
 
   findInvitationByHash(
     tokenHash: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.tenantInvitation.findUnique({
       where: {
@@ -331,7 +335,7 @@ export class TenantRepository {
    */
   async deleteInvitation(
     id: string,
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ): Promise<number> {
     const result =
       await db.tenantInvitation.deleteMany({
@@ -354,7 +358,7 @@ export class TenantRepository {
       userAgent?: string;
       metadata?: Prisma.InputJsonValue;
     },
-    db: DbClient = this.prisma,
+    db: DbClient = this.db,
   ) {
     return db.auditLog.create({
       data,

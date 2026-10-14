@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { z } from "zod";
 import { env } from "./config/env.js";
+import fastifyJwt from "@fastify/jwt";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -40,6 +41,9 @@ export async function buildApp() {
   await app.register(corsPlugins);
   await app.register(cookiePlugin); // must be registered BEFORE @fastify/oauth2, so oauth2 skips its own internal cookie registration
   await registerGoogleOAuth(app);
+  await app.register(fastifyJwt, {
+  secret: process.env.JWT_SECRET || "supersecret",
+});
 
   await app.register(rateLimitPlugin);
   await app.register(swaggerPlugin)

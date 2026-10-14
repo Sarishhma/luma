@@ -44,6 +44,7 @@ export const swaggerPlugin: FastifyPluginAsync = fp(async (fastify) => {
         { name: "Sessions", description: "Session management endpoints" },
         { name: "Audit Logs", description: "Audit log and event tracking endpoints" },
         { name: "Health", description: "Health check endpoint" },
+
       ],
     },
     transform: jsonSchemaTransform, // <-- converts Zod schemas into OpenAPI schemas
