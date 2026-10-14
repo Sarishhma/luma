@@ -10,6 +10,7 @@ import type {
   SwitchTenantInput,
   UpdateMemberRoleInput,
 } from "../schema/tenant.schema.js";
+import { db } from "../../../lib/db.js";
 
 /** JWT + request => a plain object the service understands. */
 function getActor(request: FastifyRequest): Actor {
@@ -38,7 +39,7 @@ export class TenantController {
   private readonly service: TenantService;
 
   constructor(prisma: PrismaClient) {
-    this.service = new TenantService(new TenantRepository(prisma));
+    this.service = new TenantService(new TenantRepository(db));
   }
 
   createTenant = async (request: FastifyRequest<{ Body: CreateTenantInput }>, reply: FastifyReply) => {
