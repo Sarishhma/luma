@@ -110,11 +110,13 @@ model Tenant {
   updatedAt   DateTime @updatedAt
   createdById String
 
-  // Subscription metadata
+  // Subscription meta  data
   stripeCustomerId     String?             @unique
   stripeSubscriptionId String?             @unique
   subscriptionStatus   SubscriptionStatus? @default(TRIALING)
-  planId               String?             @default("free")
+  planId String @default("free")
+  plan Plan @relation(fields: [planId],references: [id],onDelete: Restrict)
+  
   trialEndsAt          DateTime?
 
   // Relations
@@ -226,4 +228,38 @@ model Post {
   tenantId String
 
   @@unique([id, tenantId]) // Required for findUnique/update injections
+}
+
+model Plan {
+  id          String   @id
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  features PlanFeature[]
+  tenants  Tenant[]
+  
+}
+
+model Feature {
+  id          String   @id
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  plans PlanFeature[]
+}
+
+model PlanFeature {
+  planId    String
+  featureId String
+
+  plan Plan @relation(fields: [planId],references: [id],onDelete: Cascade)
+
+  feature Feature @relation(fields: [featureId],references: [id],onDelete: Cascade)
+
+  @@id([planId, featureId])
+  @@index([featureId])
 }
