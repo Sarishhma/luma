@@ -22,6 +22,7 @@ import { tenantRoutes } from "./modules/tenant/routes/tenant.routes.js";
 import { projectRoutes } from "./modules/projects/routes/project.routes.js";
 import rawBody from "fastify-raw-body"
 import { billingRoutes } from "./modules/billing/routes/Billing.routes.js";
+import { entitlementsRoutes } from "./modules/entitlements/routes/entitlement.routes.js";
 
 export async function buildApp() {
   //is a function that RETURNS the app, instead of just running it directly here — this is a testability pattern: later, if you write automated tests, you can call buildApp()
@@ -62,6 +63,8 @@ export async function buildApp() {
   await app.register(tenantRoutes,{prefix:"/api/"})
   await app.register(projectRoutes,{prefix:"/api/"})
   await app.register(billingRoutes,{prefix:"/api/billing"})
+  await app.register(entitlementsRoutes,{prefix:"/api/entitlement"})
+
   app.get(
     "/health",
     {
